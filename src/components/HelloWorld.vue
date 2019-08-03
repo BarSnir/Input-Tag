@@ -1,58 +1,157 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
-  </div>
+<div id="master-div">
+    <div class="categories"
+      v-for="(tag, index) in tags"
+      v-bind:key="index"
+     >
+    {{ tag }}
+    </div>
+    <div id="tag-container" class="tag">
+         <input  
+          id = "tag-input"
+          class="tag-input"
+          :value="textInput"
+          v-on:keyup.comma="debounceInput($event.target.value)" 
+          v-on:keyup.left="moveLeftEl()"
+          v-on:keyup.right="moveRightEl()"
+       />
+    </div>
+</div>
 </template>
 
 <script>
+import { LinkedList, Node } from '../services/LinkedListServices';
 export default {
   name: 'HelloWorld',
-  props: {
-    msg: String
+  data(){
+    return{
+        timeOut:null,
+        tags: ['pen','pilot','stablo'],
+        textInput:null,
+        cursorPointer:null,
+        linkedList:null
+    }
+  },
+  beforeMount(){
+    this.init();
+  },
+  updated(){
+    let input = document.getElementById("tag-input");
+    input.focus();
+  },
+  methods:{
+    init(){
+      this.linkedList = new LinkedList(this.tags[0]);
+      for (let i = 1; i < this.tags.length; i++) {
+        this.linkedList.append(this.tags[i]);
+        this.cursorPointer = this.tags.length;
+      }
+    },
+    replaceComma(expression){
+      var find = ',';
+      var re = new RegExp(find, 'g');
+      return expression.replace(re,''); 
+    },
+    updateView(value){
+      let newView = value;
+      newView = this.replaceComma(newView);
+      this.editItem(newView)
+      this.textInput = null;
+    },
+    editItem(val){
+      let parent = document.getElementById("tag-container");
+      let master = document.getElementById("master-div");
+      master.append(parent);
+      if( this.cursorPointer === 0 ){
+        this.linkedList.prepend(val);
+      }else if(this.cursorPointer === this.tags.length ){
+        this.linkedList.append(val);
+      }else {
+        this.linkedList.insert(this.cursorPointer, val);
+      }
+      this.$nextTick(() => {
+        this.tags  = this.linkedList.printList();
+        this.cursorPointer = this.tags.length;
+      });
+      
+    },
+    update(){
+      this.tags = this.linkedList.printList();
+    },
+    debounceInput(val){
+      if (this.timeout) clearTimeout(this.timeout); 
+       this.timeout = setTimeout(() => {
+          this.updateView(val);
+       }, 10);
+    },
+    moveLeftEl(){
+      let parent = document.getElementById("tag-container");
+      let cousin = parent.previousSibling;
+      let master = document.getElementById("master-div");
+      let input = document.getElementById("tag-input");
+      if (cousin === null) {
+        input.focus();
+        return;
+      }
+      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) - 1 ;
+      console.log(this.cursorPointer);
+      master.insertBefore(parent, cousin);
+      input.focus();
+    },
+    moveRightEl(){
+      let parent = document.getElementById("tag-container");
+      let cousin = parent.nextSibling;
+      let master = document.getElementById("master-div");
+      let input = document.getElementById("tag-input");
+      if (cousin === null) {
+        input.focus();
+        return;
+      }
+      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) + 1 ;
+      console.log(this.cursorPointer);
+      master.insertBefore(cousin,parent);
+      input.focus();
+    }
   }
+
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h3 {
-  margin: 40px 0 0;
+#master-div{
+  display:block;
+  width:500px;
+  height:30px;
+  border: 1px solid black;
+  padding:12px 0 12px 15px;
+  overflow:scroll; 
+  white-space: nowrap;
+  overflow: auto;
+  overflow-y: hidden;
 }
-ul {
-  list-style-type: none;
-  padding: 0;
+
+.tag{
+  display:inline-block;
 }
-li {
-  display: inline-block;
-  margin: 0 10px;
+
+.tag-input{
+  border:0;
+  min-width:5px;
+  max-width:50px;
 }
-a {
-  color: #42b983;
+
+.categories{
+  display:inline-block;
+  margin-right:15px;
+  border:1px solid black;
+  border-radius:px;
+  padding:5px;
+  max-width:50px;
 }
+
+.tag-input:focus {
+    outline: none;
+}
+
 </style>
