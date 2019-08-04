@@ -41,9 +41,13 @@ export default {
     let parent = document.getElementById("tag-container");
     let master = document.getElementById("master-div");
     let input = document.getElementById("tag-input");
-    input.focus();
+    console.log(this.cursorPointer)
+    master.insertBefore(
+      parent,
+      master.childNodes[this.cursorPointer] 
+    );
     this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
-    console.log(this.cursorPointer);
+    input.focus();
   },
   methods:{
     init(){
@@ -61,10 +65,10 @@ export default {
     updateView(value){
       let newView = value;
       newView = this.replaceComma(newView);
-      this.editItem(newView)
+      this.addItem(newView)
       this.textInput = null;
     },
-    editItem(val){
+    addItem(val){
       this.temp = val;
       let parent = document.getElementById("tag-container");
       let master = document.getElementById("master-div");
@@ -75,7 +79,7 @@ export default {
         this.linkedList.insert(this.cursorPointer, val);
       }
       this.$nextTick(() => {
-        this.tags  = this.linkedList.printList();
+        this.tags = this.linkedList.printList();
       });
     },
     removeItem(){
@@ -85,12 +89,11 @@ export default {
       if(this.textInput !== null && this.textInput !==""){
         return;
       }
-
       if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
-
         this.$nextTick(() => {
           let temp = this.tags[this.cursorPointer-1];
           this.linkedList.remove(this.cursorPointer-1);
+          this.cursorPointer--;
           this.tags = this.linkedList.printList();
           this.textInput = temp;
         });
