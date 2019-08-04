@@ -44,14 +44,17 @@ export class LinkedList {
         return this.printList();
     }
     remove(index) {
-        // check input;
         if(index >= this.length){
             this.tail.next = null;
+        }
+        if(index===0){
+            this.head = this.traverseToIndex(1);
+            return this.printList();  
         }
         const leader = this.traverseToIndex(index-1);
         const unwantedNode = leader.next;
         leader.next = unwantedNode.next;
-        this.tail = this.updateTail();
+        this.tail = this._updateTail();
         this.length--;
         return this.printList();
     }
@@ -64,7 +67,7 @@ export class LinkedList {
         }
         return currentNode;
     }
-    updateTail(){
+    _updateTail(){
         let currentNode = this.head;
         while (currentNode.next) {
             currentNode = currentNode.next;

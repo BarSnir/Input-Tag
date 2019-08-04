@@ -83,11 +83,18 @@ export default {
       });
     },
     removeItem(){
-      let parent = document.getElementById("tag-container");
-      let master = document.getElementById("master-div");
       let input = document.getElementById("tag-input");
       if(this.textInput !== null && this.textInput !==""){
         return;
+      }
+      if(this.cursorPointer-1===0 && this.tags.length > 2){
+        this.$nextTick(() => {
+          let temp = this.tags[this.cursorPointer-1];
+          this.linkedList.remove(0);
+          this.cursorPointer--;
+          this.tags = this.linkedList.printList();
+          this.textInput = temp;
+        });
       }
       if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
         this.$nextTick(() => {
