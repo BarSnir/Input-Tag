@@ -11,6 +11,7 @@
           id = "tag-input"
           class="tag-input"
           :value="textInput"
+          v-on:keyup.backspace="removeItem()"
           v-on:keyup.comma="debounceInput($event.target.value)" 
           v-on:keyup.left="moveLeftEl()"
           v-on:keyup.right="moveRightEl()"
@@ -20,24 +21,29 @@
 </template>
 
 <script>
-import { LinkedList, Node } from '../services/LinkedListServices';
+import { LinkedList } from '../services/LinkedListServices';
 export default {
   name: 'HelloWorld',
   data(){
     return{
         timeOut:null,
-        tags: ['pen','pilot','stablo'],
+        tags: ['A','B','C'],
         textInput:null,
         cursorPointer:null,
-        linkedList:null
+        linkedList:null,
+        temp:null
     }
   },
   beforeMount(){
     this.init();
   },
   updated(){
+    let parent = document.getElementById("tag-container");
+    let master = document.getElementById("master-div");
     let input = document.getElementById("tag-input");
     input.focus();
+    this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
+    console.log(this.cursorPointer);
   },
   methods:{
     init(){
@@ -59,24 +65,36 @@ export default {
       this.textInput = null;
     },
     editItem(val){
+      this.temp = val;
       let parent = document.getElementById("tag-container");
       let master = document.getElementById("master-div");
       master.append(parent);
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
-      }else if(this.cursorPointer === this.tags.length ){
-        this.linkedList.append(val);
       }else {
         this.linkedList.insert(this.cursorPointer, val);
       }
       this.$nextTick(() => {
         this.tags  = this.linkedList.printList();
-        this.cursorPointer = this.tags.length;
       });
-      
     },
-    update(){
-      this.tags = this.linkedList.printList();
+    removeItem(){
+      let parent = document.getElementById("tag-container");
+      let master = document.getElementById("master-div");
+      let input = document.getElementById("tag-input");
+      if(this.textInput !== null && this.textInput !==""){
+        return;
+      }
+
+      if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
+
+        this.$nextTick(() => {
+          let temp = this.tags[this.cursorPointer-1];
+           this.linkedList.remove(this.cursorPointer-1);
+          this.textInput = temp;
+          this.tags  = this.linkedList.printList();
+        });
+      }
     },
     debounceInput(val){
       if (this.timeout) clearTimeout(this.timeout); 
@@ -93,10 +111,9 @@ export default {
         input.focus();
         return;
       }
-      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) - 1 ;
-      console.log(this.cursorPointer);
       master.insertBefore(parent, cousin);
       input.focus();
+      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
     },
     moveRightEl(){
       let parent = document.getElementById("tag-container");
@@ -107,17 +124,15 @@ export default {
         input.focus();
         return;
       }
-      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) + 1 ;
-      console.log(this.cursorPointer);
       master.insertBefore(cousin,parent);
       input.focus();
+      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) ;
     }
   }
 
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 #master-div{
   display:block;
@@ -129,6 +144,7 @@ export default {
   white-space: nowrap;
   overflow: auto;
   overflow-y: hidden;
+  margin:0 auto;
 }
 
 .tag{
