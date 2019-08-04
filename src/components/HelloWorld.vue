@@ -90,9 +90,9 @@ export default {
 
         this.$nextTick(() => {
           let temp = this.tags[this.cursorPointer-1];
-           this.linkedList.remove(this.cursorPointer-1);
+          this.linkedList.remove(this.cursorPointer-1);
+          this.tags = this.linkedList.printList();
           this.textInput = temp;
-          this.tags  = this.linkedList.printList();
         });
       }
     },

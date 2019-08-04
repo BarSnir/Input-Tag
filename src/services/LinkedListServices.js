@@ -49,10 +49,11 @@ export class LinkedList {
             this.tail.next = null;
         }
         const leader = this.traverseToIndex(index-1);
-        const nextPart = this.traverseToIndex(index+1);
-        leader.next = nextPart;
+        const unwantedNode = leader.next;
+        leader.next = unwantedNode.next;
+        this.tail = this.updateTail();
         this.length--;
-        return this.printList(); 
+        return this.printList();
     }
     traverseToIndex(index){
         let counter = 0;
@@ -60,6 +61,13 @@ export class LinkedList {
         while (counter !== index) {
             currentNode = currentNode.next;
             counter++;
+        }
+        return currentNode;
+    }
+    updateTail(){
+        let currentNode = this.head;
+        while (currentNode.next) {
+            currentNode = currentNode.next;
         }
         return currentNode;
     }
