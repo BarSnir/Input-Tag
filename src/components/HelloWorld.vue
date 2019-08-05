@@ -13,8 +13,8 @@
           :value="textInput"
           v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
           v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
-          v-on:keyup.left="moveLeftEl()"
-          v-on:keyup.right="moveRightEl()" />
+          v-on:keyup.left="moveLeftEl($event.target.value)"
+          v-on:keyup.right="moveRightEl($event.target.value)" />
     </div>
 </div>
 </template>
@@ -24,7 +24,7 @@ import { StringUtil } from '../Utils/StringUtil';
 import { LinkedList } from '../Services/LinkedListServices';
 export default {
   name: 'HelloWorld',
-  data(){
+  data() {
     return {
       timeOut:null,
       tags: ['A','B','C'],
@@ -41,14 +41,14 @@ export default {
       removeItemTrigger:1
     }
   },
-  beforeMount(){
+  beforeMount() {
     this.init();
   },
-  updated(){
+  updated() {
     this.updateInit();
   },
   methods:{
-    init(){
+    init() {
       this.stringUtil = new StringUtil();
       this.linkedList = new LinkedList(this.tags[0]);
       for (let i = 1; i < this.tags.length; i++) {
@@ -56,24 +56,25 @@ export default {
         this.cursorPointer = this.tags.length;
       }
     },
-    updateInit(){
+    updateInit() {
       this.$nextTick( () => {
         const actionHandler = {
-            "add":1,
-            "remove":0
+            "add":{ handler:'', positionValue:1 },
+            "remove":{ handler:'', positionValue:0 }
         };
+        const action = actionHandler[this.lastAction];
         const master = document.getElementById(this.elNamesObj.master);
         const parent = document.getElementById(this.elNamesObj.parent);
         const input = document.getElementById(this.elNamesObj.input);
         master.insertBefore(
           parent,
-          master.childNodes[this.cursorPointer+(actionHandler[this.lastAction])] 
+          master.childNodes[this.cursorPointer+(action.positionValue)]
         );
         this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
         input.focus();
       });
     },
-    debounceAndProcess(val, state){
+    debounceAndProcess(val, state) {
       const handlers = {
         "add":this.processAddItemRender,
         "remove":this.processRemoveItemRender
@@ -83,21 +84,21 @@ export default {
           handlers[state](val);
        }, 30);
     },
-    processAddItemRender(value){
+    processAddItemRender(value) {
       let updateValue = this.stringUtil.replaceComma(value);
       this.addItemToTags(updateValue);
       this.appendInputToMasterNode();
       this.textInput = null;
     },
-    processRemoveItemRender(val){
+    processRemoveItemRender(val) {
       this.isItemReadyToRemove(val) &&
       this.removeItemFromTags(val);
     },
-    appendInputToMasterNode(){
+    appendInputToMasterNode() {
       document.getElementById(this.elNamesObj.master)
       .append(document.getElementById(this.elNamesObj.parent));
     },
-    addItemToTags(val){
+    addItemToTags(val) {
       this.removeItemTrigger = 1;
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
@@ -107,13 +108,13 @@ export default {
       this.linkedList.insert(this.cursorPointer, val);
       this.updateItemRender();
     },
-    updateItemRender(){
+    updateItemRender() {
       this.$nextTick(() => {
         this.tags = this.linkedList.printList();
         this.lastAction = 'add';
       });
     },
-    removeItemFromTags(val){
+    removeItemFromTags(val) {
       this.removeItemTrigger = 0;
       if(!(this.cursorPointer-1)){
         this.linkedList.removeFirst();
@@ -123,7 +124,7 @@ export default {
       this.linkedList.remove(this.cursorPointer-1);
       this.removeItemRender();
     },
-    removeItemRender(){
+    removeItemRender() {
       this.$nextTick(() => {
         let temp = this.tags[this.cursorPointer-1];
         this.cursorPointer--;
@@ -132,7 +133,7 @@ export default {
         this.lastAction = 'remove';
       });
     },
-    isItemReadyToRemove(val){
+    isItemReadyToRemove(val) {
       if (val.length !== 0) {
         this.removeItemTrigger = 0;
         return false;
@@ -140,11 +141,11 @@ export default {
       this.removeItemTrigger++;
       return this.removeItemTrigger === 2;
     },
-    moveLeftEl(){
+    moveLeftEl(val) {
       let master = document.getElementById(this.elNamesObj.master);
       let parent = document.getElementById(this.elNamesObj.parent);
       let cousin = parent.previousSibling; 
-      if (cousin === null) {
+      if (this.isElReadyToMove(cousin, val)) {
         this.focusInput();
         return;
       }
@@ -152,11 +153,11 @@ export default {
       this.focusInput();
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
     },
-    moveRightEl(){
+    moveRightEl(val) {
       let master = document.getElementById(this.elNamesObj.master);
       let parent = document.getElementById(this.elNamesObj.parent);
       let cousin = parent.nextSibling;
-      if (cousin === null) {
+      if (this.isElReadyToMove(cousin, val)) {
         this.focusInput();
         return;
       }
@@ -164,9 +165,11 @@ export default {
       this.focusInput();
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) ;
     },
-    focusInput(){
-      let input = document.getElementById(this.elNamesObj.input);
-      input.focus();
+    isElReadyToMove(node, val) { 
+      return (node === null) || (val.length !== 0);
+    },
+    focusInput() {
+      document.getElementById(this.elNamesObj.input).focus();
     }
   }
 }
