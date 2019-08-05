@@ -114,12 +114,30 @@ export default {
         this.lastAction = 'add';
       });
     },
+<<<<<<< Updated upstream
     removeItemFromTags(val) {
       this.removeItemTrigger = 0;
       if(!(this.cursorPointer-1)){
         this.linkedList.removeFirst();
         this.removeItemRender();
         return;
+=======
+    removeItemFromTags(val){
+      if(this.isRemoveTrigger(val)){
+        this.removeItemTrigger = 0;
+        if(this.cursorPointer-1===0 && this.tags.length > 2){
+            this.linkedList.remove(0);
+        }
+        if (val.length === 0 || !this.tags[this.cursorPointer-1]) {
+            this.linkedList.remove(this.cursorPointer-1);
+        }
+        this.$nextTick(() => {
+          let tempText = this.tags[this.cursorPointer-1];
+          this.cursorPointer--;
+          this.tags = this.linkedList.printList();
+          this.textInput = tempText;
+        });
+>>>>>>> Stashed changes
       }
       this.linkedList.remove(this.cursorPointer-1);
       this.removeItemRender();
