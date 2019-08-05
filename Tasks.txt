@@ -1,0 +1,3 @@
+Fix LinkedList when try to erase before head;
+At blur,the input element should be appended;
+Ignore when typing 'ת';

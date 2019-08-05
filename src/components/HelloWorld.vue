@@ -10,7 +10,7 @@
          <input  
           :id ="'tag-input-'+uniId"
           class="tag-input"
-          :value="textInput"
+          v-model="textInput"
           v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
           v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
           v-on:keyup.left="moveLeftEl($event.target.value)"
@@ -28,7 +28,7 @@ export default {
   data() {
     return {
       timeOut:null,
-      tags: ['A','B','C'],
+      tags: ['ארון','ארונות','מגירות ארון'],
       textInput:null,
       cursorPointer:null,
       linkedList:null,
@@ -84,9 +84,9 @@ export default {
         "remove":this.processRemoveItemRender
       };
       if (this.timeout) clearTimeout(this.timeout); 
-       this.timeout = setTimeout(() => {
+        this.timeout = setTimeout(() => {
           handlers[state](val);
-       }, 30);
+        }, 30);
     },
     processAddItemRender(value) {
       let updateValue = this.stringUtil.replaceComma(value);
@@ -118,7 +118,7 @@ export default {
         this.lastAction = 'add';
       });
     },
-    removeItemFromTags(val) {
+    removeItemFromTags() {
       this.removeItemTrigger = 0;
       if(!(this.cursorPointer-1)){
         this.linkedList.removeFirst();
