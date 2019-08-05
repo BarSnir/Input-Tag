@@ -191,10 +191,12 @@ export default {
   padding:12px 0 12px 15px;
   overflow:scroll; 
   white-space: nowrap;
-  overflow: auto;
-  overflow-y: hidden;
+  overflow-x: scroll;
+  overflow-y:unset;
   margin:0 auto;
   direction: rtl;
+  border-radius:2px;
+  margin-bottom:2px;
 }
 .tag{
   display:block;
