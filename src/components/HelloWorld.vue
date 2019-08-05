@@ -11,11 +11,10 @@
           id = "tag-input"
           class="tag-input"
           :value="textInput"
-          v-on:keyup.backspace="removeItem()"
+          v-on:keyup.backspace="removeItemFromTags($event.target.value)"
           v-on:keyup.comma="debounceInput($event.target.value)" 
           v-on:keyup.left="moveLeftEl()"
-          v-on:keyup.right="moveRightEl()"
-       />
+          v-on:keyup.right="moveRightEl()" />
     </div>
 </div>
 </template>
@@ -31,22 +30,19 @@ export default {
         textInput:null,
         cursorPointer:null,
         linkedList:null,
-        temp:null
+        elNamesObj:{
+          master:"master-div",
+          parent:"tag-container",
+          input:"tag-input"
+        },
+        removeItemTrigger:0
     }
   },
   beforeMount(){
     this.init();
   },
   updated(){
-    let parent = document.getElementById("tag-container");
-    let master = document.getElementById("master-div");
-    let input = document.getElementById("tag-input");
-    master.insertBefore(
-      parent,
-      master.childNodes[this.cursorPointer] 
-    );
-    this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
-    input.focus();
+    this.updateInit();
   },
   methods:{
     init(){
@@ -56,60 +52,82 @@ export default {
         this.cursorPointer = this.tags.length;
       }
     },
+    updateInit(){
+      let parent = document.getElementById("tag-container");
+      let master = document.getElementById("master-div");
+      let input = document.getElementById("tag-input");
+      master.insertBefore(
+        parent,
+        master.childNodes[this.cursorPointer] 
+      );
+      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
+      input.focus();
+    },
+    debounceInput(val){
+      if (this.timeout) clearTimeout(this.timeout); 
+       this.timeout = setTimeout(() => {
+          this.processRender(val);
+       }, 10);
+    },
+    processRender(value){
+      let updateValue = this.replaceComma(value);
+      this.appendInputToMasterNode();
+      this.addItemToTags(updateValue);
+      this.textInput = null;
+    },
     replaceComma(expression){
       var find = ',';
       var re = new RegExp(find, 'g');
       return expression.replace(re,''); 
     },
-    updateView(value){
-      let newView = value;
-      newView = this.replaceComma(newView);
-      this.addItem(newView)
-      this.textInput = null;
+    appendInputToMasterNode(){
+      document.getElementById(this.elNamesObj.master)
+      .append(document.getElementById(this.elNamesObj.parent));
     },
-    addItem(val){
-      this.temp = val;
-      let parent = document.getElementById("tag-container");
-      let master = document.getElementById("master-div");
-      master.append(parent);
+    addItemToTags(val){
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
-      }else {
-        this.linkedList.insert(this.cursorPointer, val);
+        this.updateTagRender()
+        return;
       }
+      this.linkedList.insert(this.cursorPointer, val);
+      this.updateTagRender();
+    },
+    updateTagRender(){
       this.$nextTick(() => {
         this.tags = this.linkedList.printList();
       });
     },
-    removeItem(){
-      let input = document.getElementById("tag-input");
-      if(this.textInput !== null && this.textInput !==""){
+    removeItemFromTags(val){
+      let input = document.getElementById(this.elNamesObj.input);
+      if(val.length!==0){
         return;
+      }else{
+        this.removeItemTrigger++
       }
-      if(this.cursorPointer-1===0 && this.tags.length > 2){
-        this.$nextTick(() => {
-          let temp = this.tags[this.cursorPointer-1];
-          this.linkedList.remove(0);
-          this.cursorPointer--;
-          this.tags = this.linkedList.printList();
-          this.textInput = temp;
-        });
+
+      if(this.removeItemTrigger === 2){
+        if(this.cursorPointer-1===0 && this.tags.length > 2){
+          this.$nextTick(() => {
+            let temp = this.tags[this.cursorPointer-1];
+            this.linkedList.remove(0);
+            this.cursorPointer--;
+            this.tags = this.linkedList.printList();
+            this.textInput = temp;
+          });
+        }
+        if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
+          this.$nextTick(() => {
+            let temp = this.tags[this.cursorPointer-1];
+            this.linkedList.remove(this.cursorPointer-1);
+            this.cursorPointer--;
+            this.tags = this.linkedList.printList();
+            this.textInput = temp;
+          });
+        }
+        this.removeItemTrigger = 0;
       }
-      if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
-        this.$nextTick(() => {
-          let temp = this.tags[this.cursorPointer-1];
-          this.linkedList.remove(this.cursorPointer-1);
-          this.cursorPointer--;
-          this.tags = this.linkedList.printList();
-          this.textInput = temp;
-        });
-      }
-    },
-    debounceInput(val){
-      if (this.timeout) clearTimeout(this.timeout); 
-       this.timeout = setTimeout(() => {
-          this.updateView(val);
-       }, 10);
+
     },
     moveLeftEl(){
       let parent = document.getElementById("tag-container");
