@@ -1,21 +1,20 @@
 <template>
 <div :id="'master-div-'+uniId" class="master-div" v-on:click="focusInput()">
-    <div class="categories"
-      v-for="(tag, index) in tags"
-      v-bind:key="index"
-     >
-    {{ tag }}
-    </div>
-    <div :id="'tag-container-'+uniId" class="tag">
-         <input  
-          :id ="'tag-input-'+uniId"
-          class="tag-input"
-          v-model="textInput"
-          v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
-          v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
-          v-on:keyup.left="moveLeftEl($event.target.value)"
-          v-on:keyup.right="moveRightEl($event.target.value)" />
-    </div>
+      <div class="categories"
+        v-for="(tag, index) in tags"
+        v-bind:key="index">
+      {{ tag }}
+      </div>
+      <div :id="'tag-container-'+uniId" class="tag">
+        <input  
+        :id ="'tag-input-'+uniId"
+        class="tag-input"
+        v-model="textInput"
+        v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
+        v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
+        v-on:keyup.left="moveLeftEl($event.target.value)"
+        v-on:keyup.right="moveRightEl($event.target.value)" />
+      </div>
 </div>
 </template>
 
@@ -29,7 +28,7 @@ export default {
     return {
       timeOut:null,
       tags: ['ארון','ארונות','מגירות ארון'],
-      textInput:null,
+      textInput:"",
       cursorPointer:null,
       linkedList:null,
       stringUtils:null,
@@ -38,7 +37,7 @@ export default {
         parent:"tag-container-",
         input:"tag-input-"
       },
-      lastAction:null,
+      lastAction:"add",
       removeItemTrigger:1
     }
   },
@@ -69,16 +68,18 @@ export default {
         const action = actionHandler[this.lastAction];
         const master = document.getElementById(this.elNamesObj.master);
         const parent = document.getElementById(this.elNamesObj.parent);
-        const input = document.getElementById(this.elNamesObj.input);
         master.insertBefore(
           parent,
           master.childNodes[this.cursorPointer+(action.positionValue)]
         );
         this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
-        input.focus();
+        this.focusInput();
       });
     },
     debounceAndProcess(val, state) {
+      if(this.preventAddProccess(state)){
+        return;
+      }
       const handlers = {
         "add":this.processAddItemRender,
         "remove":this.processRemoveItemRender
@@ -88,11 +89,14 @@ export default {
           handlers[state](val);
         }, 30);
     },
+    preventAddProccess(state){
+      return !this.textInput.includes(',') && state=="add";
+    },
     processAddItemRender(value) {
       let updateValue = this.stringUtil.replaceComma(value);
       this.addItemToTags(updateValue);
       this.appendInputToMasterNode();
-      this.textInput = null;
+      this.textInput = "";
     },
     processRemoveItemRender(val) {
       this.isItemReadyToRemove(val) &&
@@ -145,7 +149,7 @@ export default {
       this.removeItemTrigger++;
       return this.removeItemTrigger === 2;
     },
-    moveLeftEl(val) {
+    moveRightEl(val) {
       let master = document.getElementById(this.elNamesObj.master);
       let parent = document.getElementById(this.elNamesObj.parent);
       let cousin = parent.previousSibling; 
@@ -157,7 +161,7 @@ export default {
       this.focusInput();
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
     },
-    moveRightEl(val) {
+    moveLeftEl(val) {
       let master = document.getElementById(this.elNamesObj.master);
       let parent = document.getElementById(this.elNamesObj.parent);
       let cousin = parent.nextSibling;
@@ -190,22 +194,26 @@ export default {
   overflow: auto;
   overflow-y: hidden;
   margin:0 auto;
+  direction: rtl;
 }
 .tag{
-  display:inline-block;
+  display:block;
+  float: right;
 }
 .tag-input{
+  display:block;
   border:0;
   min-width:5px;
-  max-width:50px;
+  max-width:60px; 
+  margin-right:10px;
 }
 .categories{
-  display:inline-block;
+  display:block;
   margin-right:15px;
   border:1px solid black;
-  border-radius:px;
+  border-radius:3px;
   padding:5px;
-  max-width:50px;
+  float:right;
 }
 .tag-input:focus {
   outline: none;

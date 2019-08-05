@@ -1,4 +1,4 @@
 Fix LinkedList when try to erase before head;
+Add Doubly Linked List;
 At blur,the input element should be appended;
-Ignore when typing 'ת';
-Fix Hebrew;
+Add X Button;
