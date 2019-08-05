@@ -91,7 +91,7 @@ export default {
       .append(document.getElementById(this.elNamesObj.parent));
     },
     addItemToTags(val){
-      this.removeItemTrigger=1;
+      this.removeItemTrigger = 1;
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
         this.updateItemRender();
