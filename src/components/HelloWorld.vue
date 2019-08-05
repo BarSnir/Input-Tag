@@ -41,7 +41,6 @@ export default {
     let parent = document.getElementById("tag-container");
     let master = document.getElementById("master-div");
     let input = document.getElementById("tag-input");
-    console.log(this.cursorPointer)
     master.insertBefore(
       parent,
       master.childNodes[this.cursorPointer] 
