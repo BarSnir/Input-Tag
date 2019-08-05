@@ -11,8 +11,8 @@
           id = "tag-input"
           class="tag-input"
           :value="textInput"
-          v-on:keyup.backspace="debounce($event.target.value, 'remove')"
-          v-on:keyup.comma="debounce($event.target.value, 'add')" 
+          v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
+          v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
           v-on:keyup.left="moveLeftEl()"
           v-on:keyup.right="moveRightEl()" />
     </div>
@@ -63,17 +63,17 @@ export default {
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
       input.focus();
     },
-    debounce(val, state){
+    debounceAndProcess(val, state){
       const handlers = {
-        "add":this.processRender,
-        "remove":this.removeItemFromTags
+        "add":this.processAddItemRender,
+        "remove":this.processRemoveItemRender
       };
       if (this.timeout) clearTimeout(this.timeout); 
        this.timeout = setTimeout(() => {
           handlers[state](val);
        }, 10);
     },
-    processRender(value){
+    processAddItemRender(value){
       let updateValue = this.replaceComma(value);
       this.appendInputToMasterNode();
       this.addItemToTags(updateValue);
@@ -103,17 +103,19 @@ export default {
         this.tags = this.linkedList.printList();
       });
     },
+    processRemoveItemRender(val){
+      this.isItemReadyToRemove(val) &&
+        this.removeItemFromTags(val);
+    },
     removeItemFromTags(val){
-      if(this.isRemoveTrigger(val)){
-        this.removeItemTrigger = 0;
-        if(this.cursorPointer-1===0 && this.tags.length > 2){
-          this.linkedList.removeFirst();
-          this.removeTagRender();
-          return;
-        }
-        this.linkedList.remove(this.cursorPointer-1);
+      this.removeItemTrigger = 0;
+      if(!(this.cursorPointer-1)){
+        this.linkedList.removeFirst();
         this.removeTagRender();
+        return;
       }
+      this.linkedList.remove(this.cursorPointer-1);
+      this.removeTagRender();
     },
     removeTagRender(){
       this.$nextTick(() => {
@@ -123,7 +125,7 @@ export default {
         this.textInput = temp;
       });
     },
-    isRemoveTrigger(val){
+    isItemReadyToRemove(val){
       if(val.length !== 0){
         this.removeItemTrigger=0;
         return false
