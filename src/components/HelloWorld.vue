@@ -1,14 +1,14 @@
 <template>
-<div id="master-div" v-on:click="focusInput()">
+<div :id="'master-div-'+uniId" class="master-div" v-on:click="focusInput()">
     <div class="categories"
       v-for="(tag, index) in tags"
       v-bind:key="index"
      >
     {{ tag }}
     </div>
-    <div id="tag-container" class="tag">
+    <div :id="'tag-container-'+uniId" class="tag">
          <input  
-          id = "tag-input"
+          :id ="'tag-input-'+uniId"
           class="tag-input"
           :value="textInput"
           v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
@@ -24,6 +24,7 @@ import { StringUtil } from '../Utils/StringUtil';
 import { LinkedList } from '../Services/LinkedListServices';
 export default {
   name: 'HelloWorld',
+  props:['uniId'],
   data() {
     return {
       timeOut:null,
@@ -33,9 +34,9 @@ export default {
       linkedList:null,
       stringUtils:null,
       elNamesObj:{
-        master:"master-div",
-        parent:"tag-container",
-        input:"tag-input"
+        master:"master-div-",
+        parent:"tag-container-",
+        input:"tag-input-"
       },
       lastAction:null,
       removeItemTrigger:1
@@ -55,6 +56,9 @@ export default {
         this.linkedList.append(this.tags[i]);
         this.cursorPointer = this.tags.length;
       }
+      this.elNamesObj.master = this.elNamesObj.master+this.uniId;
+      this.elNamesObj.parent = this.elNamesObj.parent+this.uniId;
+      this.elNamesObj.input = this.elNamesObj.input+this.uniId;
     },
     updateInit() {
       this.$nextTick( () => {
@@ -114,30 +118,12 @@ export default {
         this.lastAction = 'add';
       });
     },
-<<<<<<< Updated upstream
     removeItemFromTags(val) {
       this.removeItemTrigger = 0;
       if(!(this.cursorPointer-1)){
         this.linkedList.removeFirst();
         this.removeItemRender();
         return;
-=======
-    removeItemFromTags(val){
-      if(this.isRemoveTrigger(val)){
-        this.removeItemTrigger = 0;
-        if(this.cursorPointer-1===0 && this.tags.length > 2){
-            this.linkedList.remove(0);
-        }
-        if (val.length === 0 || !this.tags[this.cursorPointer-1]) {
-            this.linkedList.remove(this.cursorPointer-1);
-        }
-        this.$nextTick(() => {
-          let tempText = this.tags[this.cursorPointer-1];
-          this.cursorPointer--;
-          this.tags = this.linkedList.printList();
-          this.textInput = tempText;
-        });
->>>>>>> Stashed changes
       }
       this.linkedList.remove(this.cursorPointer-1);
       this.removeItemRender();
@@ -193,7 +179,7 @@ export default {
 }
 </script>
 <style scoped>
-#master-div{
+.master-div{
   display:block;
   width:500px;
   height:30px;

@@ -1,8 +1,9 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <div v-for="(item,index) in 10" v-bind:key="index">
+      <HelloWorld :uniId="item"/>
+    </div>
   </div>
 </template>
 
