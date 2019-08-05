@@ -35,7 +35,7 @@ export default {
           parent:"tag-container",
           input:"tag-input"
         },
-        removeItemTrigger:0
+        removeItemTrigger:1
     }
   },
   beforeMount(){
@@ -85,6 +85,7 @@ export default {
       .append(document.getElementById(this.elNamesObj.parent));
     },
     addItemToTags(val){
+      this.removeItemTrigger=1;
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
         this.updateTagRender()
@@ -99,14 +100,8 @@ export default {
       });
     },
     removeItemFromTags(val){
-      let input = document.getElementById(this.elNamesObj.input);
-      if(val.length!==0){
-        return;
-      }else{
-        this.removeItemTrigger++
-      }
-      
-      if(this.removeItemTrigger === 2){
+      if(this.isRemoveTrigger(val)){
+        this.removeItemTrigger = 0;
         if(this.cursorPointer-1===0 && this.tags.length > 2){
           this.$nextTick(() => {
             let temp = this.tags[this.cursorPointer-1];
@@ -116,7 +111,7 @@ export default {
             this.textInput = temp;
           });
         }
-        if (input.nodeValue === null || !this.tags[this.cursorPointer-1]) {
+        if (val.length === 0 || !this.tags[this.cursorPointer-1]) {
           this.$nextTick(() => {
             let temp = this.tags[this.cursorPointer-1];
             this.linkedList.remove(this.cursorPointer-1);
@@ -125,9 +120,15 @@ export default {
             this.textInput = temp;
           });
         }
-        this.removeItemTrigger = 0;
       }
-
+    },
+    isRemoveTrigger(val){
+      if(val.length !== 0){
+        this.removeItemTrigger=0;
+        return false
+      }
+      this.removeItemTrigger++;
+      return this.removeItemTrigger === 2;
     },
     moveLeftEl(){
       let parent = document.getElementById("tag-container");
