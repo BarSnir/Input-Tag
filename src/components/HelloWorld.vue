@@ -11,8 +11,8 @@
           id = "tag-input"
           class="tag-input"
           :value="textInput"
-          v-on:keyup.backspace="removeItemFromTags($event.target.value)"
-          v-on:keyup.comma="debounceInput($event.target.value)" 
+          v-on:keyup.backspace="debounce($event.target.value, 'remove')"
+          v-on:keyup.comma="debounce($event.target.value, 'add')" 
           v-on:keyup.left="moveLeftEl()"
           v-on:keyup.right="moveRightEl()" />
     </div>
@@ -53,9 +53,9 @@ export default {
       }
     },
     updateInit(){
-      let parent = document.getElementById("tag-container");
-      let master = document.getElementById("master-div");
-      let input = document.getElementById("tag-input");
+      const master = document.getElementById(this.elNamesObj.master);
+      const parent = document.getElementById(this.elNamesObj.parent);
+      const input = document.getElementById(this.elNamesObj.input);
       master.insertBefore(
         parent,
         master.childNodes[this.cursorPointer] 
@@ -63,10 +63,14 @@ export default {
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
       input.focus();
     },
-    debounceInput(val){
+    debounce(val, state){
+      const handlers = {
+        "add":this.processRender,
+        "remove":this.removeItemFromTags
+      };
       if (this.timeout) clearTimeout(this.timeout); 
        this.timeout = setTimeout(() => {
-          this.processRender(val);
+          handlers[state](val);
        }, 10);
     },
     processRender(value){
@@ -88,7 +92,7 @@ export default {
       this.removeItemTrigger=1;
       if( this.cursorPointer === 0 ){
         this.linkedList.prepend(val);
-        this.updateTagRender()
+        this.updateTagRender();
         return;
       }
       this.linkedList.insert(this.cursorPointer, val);
@@ -103,24 +107,21 @@ export default {
       if(this.isRemoveTrigger(val)){
         this.removeItemTrigger = 0;
         if(this.cursorPointer-1===0 && this.tags.length > 2){
-          this.$nextTick(() => {
-            let temp = this.tags[this.cursorPointer-1];
-            this.linkedList.remove(0);
-            this.cursorPointer--;
-            this.tags = this.linkedList.printList();
-            this.textInput = temp;
-          });
+          this.linkedList.removeFirst();
+          this.removeTagRender();
+          return;
         }
-        if (val.length === 0 || !this.tags[this.cursorPointer-1]) {
-          this.$nextTick(() => {
-            let temp = this.tags[this.cursorPointer-1];
-            this.linkedList.remove(this.cursorPointer-1);
-            this.cursorPointer--;
-            this.tags = this.linkedList.printList();
-            this.textInput = temp;
-          });
-        }
+        this.linkedList.remove(this.cursorPointer-1);
+        this.removeTagRender();
       }
+    },
+    removeTagRender(){
+      this.$nextTick(() => {
+        let temp = this.tags[this.cursorPointer-1];
+        this.cursorPointer--;
+        this.tags = this.linkedList.printList();
+        this.textInput = temp;
+      });
     },
     isRemoveTrigger(val){
       if(val.length !== 0){
@@ -157,10 +158,8 @@ export default {
       this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent) ;
     }
   }
-
 }
 </script>
-
 <style scoped>
 #master-div{
   display:block;

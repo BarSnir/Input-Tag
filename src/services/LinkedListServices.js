@@ -47,16 +47,16 @@ export class LinkedList {
         if(index >= this.length){
             this.tail.next = null;
         }
-        if(index===0){
-            this.head = this.traverseToIndex(1);
-            return this.printList();  
-        }
         const leader = this.traverseToIndex(index-1);
         const unwantedNode = leader.next;
         leader.next = unwantedNode.next;
         this.tail = this._updateTail();
         this.length--;
         return this.printList();
+    }
+    removeFirst(){
+        this.head = this.traverseToIndex(1);
+        return this.printList();  
     }
     traverseToIndex(index){
         let counter = 0;
