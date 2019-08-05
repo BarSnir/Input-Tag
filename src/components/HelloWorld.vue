@@ -20,7 +20,8 @@
 </template>
 
 <script>
-import { LinkedList } from '../services/LinkedListServices';
+import { StringUtil } from '../Utils/StringUtil';
+import { LinkedList } from '../Services/LinkedListServices';
 export default {
   name: 'HelloWorld',
   data(){
@@ -30,6 +31,7 @@ export default {
         textInput:null,
         cursorPointer:null,
         linkedList:null,
+        stringUtils:null,
         elNamesObj:{
           master:"master-div",
           parent:"tag-container",
@@ -46,6 +48,7 @@ export default {
   },
   methods:{
     init(){
+      this.stringUtil = new StringUtil();
       this.linkedList = new LinkedList(this.tags[0]);
       for (let i = 1; i < this.tags.length; i++) {
         this.linkedList.append(this.tags[i]);
@@ -74,15 +77,14 @@ export default {
        }, 10);
     },
     processAddItemRender(value){
-      let updateValue = this.replaceComma(value);
+      let updateValue = this.stringUtil.replaceComma(value);
       this.appendInputToMasterNode();
       this.addItemToTags(updateValue);
       this.textInput = null;
     },
-    replaceComma(expression){
-      var find = ',';
-      var re = new RegExp(find, 'g');
-      return expression.replace(re,''); 
+    processRemoveItemRender(val){
+      this.isItemReadyToRemove(val) &&
+      this.removeItemFromTags(val);
     },
     appendInputToMasterNode(){
       document.getElementById(this.elNamesObj.master)
@@ -102,10 +104,6 @@ export default {
       this.$nextTick(() => {
         this.tags = this.linkedList.printList();
       });
-    },
-    processRemoveItemRender(val){
-      this.isItemReadyToRemove(val) &&
-        this.removeItemFromTags(val);
     },
     removeItemFromTags(val){
       this.removeItemTrigger = 0;
@@ -175,17 +173,14 @@ export default {
   overflow-y: hidden;
   margin:0 auto;
 }
-
 .tag{
   display:inline-block;
 }
-
 .tag-input{
   border:0;
   min-width:5px;
   max-width:50px;
 }
-
 .categories{
   display:inline-block;
   margin-right:15px;
@@ -194,9 +189,7 @@ export default {
   padding:5px;
   max-width:50px;
 }
-
 .tag-input:focus {
     outline: none;
 }
-
 </style>
