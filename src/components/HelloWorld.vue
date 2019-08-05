@@ -4,6 +4,7 @@
         v-for="(tag, index) in tags"
         v-bind:key="index">
       {{ tag }}
+      <button>X</button>
       </div>
       <div :id="'tag-container-'+uniId" class="tag">
         <input  

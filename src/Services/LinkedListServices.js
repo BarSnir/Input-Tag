@@ -31,7 +31,6 @@ export class LinkedList {
        return array;
     }
     insert(index, value) {
-        // check input;
         if(index >= this.length){
             return this.append(value);
         }
