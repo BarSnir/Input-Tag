@@ -25,19 +25,20 @@ import { LinkedList } from '../Services/LinkedListServices';
 export default {
   name: 'HelloWorld',
   data(){
-    return{
-        timeOut:null,
-        tags: ['A','B','C'],
-        textInput:null,
-        cursorPointer:null,
-        linkedList:null,
-        stringUtils:null,
-        elNamesObj:{
-          master:"master-div",
-          parent:"tag-container",
-          input:"tag-input"
-        },
-        removeItemTrigger:1
+    return {
+      timeOut:null,
+      tags: ['A','B','C'],
+      textInput:null,
+      cursorPointer:null,
+      linkedList:null,
+      stringUtils:null,
+      elNamesObj:{
+        master:"master-div",
+        parent:"tag-container",
+        input:"tag-input"
+      },
+      lastAction:null,
+      removeItemTrigger:1
     }
   },
   beforeMount(){
@@ -56,15 +57,21 @@ export default {
       }
     },
     updateInit(){
-      const master = document.getElementById(this.elNamesObj.master);
-      const parent = document.getElementById(this.elNamesObj.parent);
-      const input = document.getElementById(this.elNamesObj.input);
-      master.insertBefore(
-        parent,
-        master.childNodes[this.cursorPointer] 
-      );
-      this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
-      input.focus();
+      this.$nextTick( () => {
+        const actionHandler = {
+            "add":1,
+            "remove":0
+        };
+        const master = document.getElementById(this.elNamesObj.master);
+        const parent = document.getElementById(this.elNamesObj.parent);
+        const input = document.getElementById(this.elNamesObj.input);
+        master.insertBefore(
+          parent,
+          master.childNodes[this.cursorPointer+(actionHandler[this.lastAction])] 
+        );
+        this.cursorPointer = Array.prototype.indexOf.call(master.childNodes, parent);
+        input.focus();
+      });
     },
     debounceAndProcess(val, state){
       const handlers = {
@@ -103,6 +110,7 @@ export default {
     updateItemRender(){
       this.$nextTick(() => {
         this.tags = this.linkedList.printList();
+        this.lastAction = 'add';
       });
     },
     removeItemFromTags(val){
@@ -121,6 +129,7 @@ export default {
         this.cursorPointer--;
         this.tags = this.linkedList.printList();
         this.textInput = temp;
+        this.lastAction = 'remove';
       });
     },
     isItemReadyToRemove(val){
@@ -192,6 +201,6 @@ export default {
   max-width:50px;
 }
 .tag-input:focus {
-    outline: none;
+  outline: none;
 }
 </style>
