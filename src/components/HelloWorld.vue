@@ -105,7 +105,7 @@ export default {
       }else{
         this.removeItemTrigger++
       }
-
+      
       if(this.removeItemTrigger === 2){
         if(this.cursorPointer-1===0 && this.tags.length > 2){
           this.$nextTick(() => {
