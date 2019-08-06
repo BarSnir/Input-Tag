@@ -3,6 +3,7 @@ import App from './App.vue'
 
 Vue.config.productionTip = false
 Vue.config.keyCodes.comma = 188;
+Vue.config.keyCodes.quotes = 222;
 Vue.config.keyCodes.backspace = 8;
 
 new Vue({

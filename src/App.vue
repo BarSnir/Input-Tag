@@ -2,18 +2,18 @@
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
     <div v-for="(item,index) in 10" v-bind:key="index">
-      <HelloWorld :uniId="item"/>
+      <TagInput :uniId="item"/>
     </div>
   </div>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import TagInput from './components/TagInput.vue'
 
 export default {
   name: 'app',
   components: {
-    HelloWorld
+    TagInput
   }
 }
 </script>

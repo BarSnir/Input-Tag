@@ -1,10 +1,11 @@
 <template>
-<div :id="'master-div-'+uniId" class="master-div" v-on:click="focusInput()">
-      <div class="categories"
+<div  class="master-div" v-on:click="focusInput()">
+    <div class="wrapper" :id="'master-div-'+uniId">
+        <div class="categories"
         v-for="(tag, index) in tags"
         v-bind:key="index">
       {{ tag }}
-      <button>X</button>
+      <button v-on:click="removeItemByClick(index)">X</button>
       </div>
       <div :id="'tag-container-'+uniId" class="tag">
         <input  
@@ -13,9 +14,11 @@
         v-model="textInput"
         v-on:keyup.backspace="debounceAndProcess($event.target.value, 'remove')"
         v-on:keyup.comma="debounceAndProcess($event.target.value, 'add')" 
+        v-on:keyup.quotes="debounceAndProcess($event.target.value, 'add')"
         v-on:keyup.left="moveLeftEl($event.target.value)"
         v-on:keyup.right="moveRightEl($event.target.value)" />
       </div>
+    </div>
 </div>
 </template>
 
@@ -23,7 +26,7 @@
 import { StringUtil } from '../Utils/StringUtil';
 import { LinkedList } from '../Services/LinkedListServices';
 export default {
-  name: 'HelloWorld',
+  name: 'TagInput',
   props:['uniId'],
   data() {
     return {
@@ -125,7 +128,7 @@ export default {
     },
     removeItemFromTags() {
       this.removeItemTrigger = 0;
-      if(!(this.cursorPointer-1)){
+      if (!(this.cursorPointer-1)) {
         this.linkedList.removeFirst();
         this.removeItemRender();
         return;
@@ -141,6 +144,15 @@ export default {
         this.textInput = temp;
         this.lastAction = 'remove';
       });
+    },
+    removeItemByClick(index){
+      if(!index){
+        this.linkedList.removeFirst();
+        this.tags = this.linkedList.printList();
+        return;
+      }
+      this.linkedList.remove(index);
+      this.tags = this.linkedList.printList();
     },
     isItemReadyToRemove(val) {
       if (val.length !== 0) {
@@ -187,21 +199,24 @@ export default {
 .master-div{
   display:block;
   width:500px;
-  height:30px;
+  height:50px;
   border: 1px solid black;
   padding:12px 0 12px 15px;
   overflow:scroll; 
   white-space: nowrap;
   overflow-x: scroll;
-  overflow-y:unset;
+  overflow-y:hidden;
   margin:0 auto;
   direction: rtl;
   border-radius:2px;
   margin-bottom:2px;
 }
-.tag{
-  display:block;
+.wrapper {
+  display: inline-block;
   float: right;
+}
+.tag{
+  display:inline-block;
 }
 .tag-input{
   display:block;
@@ -211,12 +226,11 @@ export default {
   margin-right:10px;
 }
 .categories{
-  display:block;
+  display:inline-block;
   margin-right:15px;
   border:1px solid black;
   border-radius:3px;
   padding:5px;
-  float:right;
 }
 .tag-input:focus {
   outline: none;

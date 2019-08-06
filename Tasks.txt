@@ -1,3 +1,3 @@
 Fix LinkedList when try to erase before head;
 Add Doubly Linked List;
-Add X Button;
+Update readme.md;
